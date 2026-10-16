@@ -1,0 +1,43 @@
+name: Auto Generate & Build APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Generate Full Flutter Project Automatically
+        run: |
+          flutter create mario_app
+          cd mario_app
+          flutter pub add flame
+          cp ../game.dart lib/main.dart
+
+      - name: Build APK
+        working-directory: ./mario_app
+        run: flutter build apk --release
+
+      - name: Upload APK for Download
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mario-Game-APK
+          path: mario_app/build/app/outputs/flutter-apk/app-release.apk
+          
